@@ -20,22 +20,30 @@ class AuthController extends Controller
             "picture" => 'required|string',
             "date_of_naissance" => 'required|date'
         ]);
+        if($request->hasFile('picture'))
+        {
+            $user = User::create([
+                "identifiant" => $fields['identifiant'],
+                "email" => $fields['email'],
+                "password" => bcrypt($fields['password']),
+                "sexe" => $fields["sexe"],
+                "date_of_naissance" => $fields['date_of_naissance'],
+                "picture" => $fields['picture']
+            ]);
+            $token = $user->createToken('user_token')->plainTextToken;
+            $response = [
+                'message' => 'User create succefuly',
+                'user' => $user,
+                'token' => $token,
+                'succes' => true
+            ];
 
-        $user = User::create([
-            "identifiant" => $fields['identifiant'],
-            "email" => $fields['email'],
-            "password" => bcrypt($fields['password']),
-            "sexe" => $fields["sexe"],
-            "date_of_naissance" => $fields['date_of_naissance'],
-            "picture" => $fields['picture']
-        ]);
-        $response = [
-            'message' => 'User create succefuly',
-            'user' => $user,
-            'succes' => true
-        ];
+            return response($response,201);
+        }
+        else {
+            return response(['message'=> 'Set picture'],401);
+        }
 
-        return response($response,201);
     }
     public function logout(Request $request) {
         auth()->user()->tokens()->delete();
