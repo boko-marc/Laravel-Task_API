@@ -42,6 +42,7 @@ class AuthController extends Controller
             return response($response,201);
         }
         else {
+
             return response(['message'=> 'Set picture'],401);
         }
 
