@@ -12,15 +12,15 @@ class Task extends Model
     const UPDATED_AT = 'last_update_task_date';
 
     protected $fillable = [
-        'titre',
+        'title',
         'description',
-        'statut',
+        'status',
         'date_of_end',
         'user_id'
     ];
 
     protected $attributes = [
-        'statut' => "En cours"
+        'status' => 0
     ];
 
     public function users()

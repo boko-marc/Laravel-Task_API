@@ -17,18 +17,19 @@ class AuthController extends Controller
             "email" => 'required|string|unique:users,email',
             "password" => 'required|string|confirmed|min:5',
             "sexe" => "required|string",
-            "picture" => 'required|string',
-            "date_of_naissance" => 'required|date'
+            "picture" => 'required|file',
+            "birthday" => 'required|date'
         ]);
         if($request->hasFile('picture'))
-        {
+        {   $filename = $request->email.'.'.$fields['picture']->getClientOriginalExtension();
+            $fields['picture']->move(public_path('/uploads/images',$filename));
             $user = User::create([
                 "identifiant" => $fields['identifiant'],
                 "email" => $fields['email'],
                 "password" => bcrypt($fields['password']),
                 "sexe" => $fields["sexe"],
-                "date_of_naissance" => $fields['date_of_naissance'],
-                "picture" => $fields['picture']
+                "birthday" => $fields['birthday'],
+                "picture" => $filename
             ]);
             $token = $user->createToken('user_token')->plainTextToken;
             $response = [
@@ -46,8 +47,11 @@ class AuthController extends Controller
 
     }
     public function logout(Request $request) {
+        // delete all tokens
         auth()->user()->tokens()->delete();
-
+        // delete specific token
+        // $user->tokens()->where('id', $tokenId)->delete();
+        // auth()->user()->tokens()->where('id', $tokenId)->delete();
         $response = [
             'message' => 'Logged out',
             'succes' => true
