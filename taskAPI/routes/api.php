@@ -17,6 +17,9 @@ use App\Http\Controllers\AuthController;
 // protected  routes
 Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::post('/logout',[AuthController::class,'logout']);
+    Route::get('/getUser',[AuthController::class,'show']);
+    Route::get('/deleteUser',[AuthController::class,'destroy']);
+    Route::put('/updatePicture',[AuthController::class,'update_picture']);
 });
 
 // public routes
@@ -25,3 +28,6 @@ Route::get('/', function() {
 });
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
+Route::get('/allUsers',[AuthController::class,'index']);
+
+

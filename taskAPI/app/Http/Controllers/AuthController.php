@@ -48,11 +48,8 @@ class AuthController extends Controller
 
     }
     public function logout(Request $request) {
-        // delete all tokens
-        auth()->user()->tokens()->delete();
-        // delete specific token
-        // $user->tokens()->where('id', $tokenId)->delete();
-        // auth()->user()->tokens()->where('id', $tokenId)->delete();
+        Auth::user()->tokens()->where('id', Auth::user()->id)->delete();
+
         $response = [
             'message' => 'Logged out',
             'succes' => true
@@ -114,4 +111,71 @@ class AuthController extends Controller
             ],401);
         }
     }
+// get  all users
+    public function index()
+    {
+        return User::all();
+    }
+
+    // get user by id
+
+    public function show()
+    {   $id = Auth::user()->id;
+        $user = User::find($id);
+        if(!$user)
+        {
+            return response([
+                'message'=> 'User not found'
+            ],401);
+        }
+        return $user;
+    }
+
+    // delete user by id
+
+    public function destroy()
+    {   $id = Auth::user()->id;
+        $user = User::destroy($id);
+        if(!$user)
+        {
+            return response([
+                'message'=> 'User not found'
+            ],401);
+        }
+        return response([
+            'message'=> 'User delete succefuly'
+        ],200);
+    }
+
+    public function update_picture(Request $request)
+    {   $id = Auth::user()->id;
+        $picture = User::find($id);
+        $image = $request->file('picture');
+        if($request->hasFile('picture'))
+        {   $filename = $picture->email.'.'.$image->getClientOriginalExtension();
+            $image->move(public_path('/uploads/images',$filename));
+            $picture->update($request->all());
+            $response = ['user' => $picture, 'message'=> 'Picture update succefully'];
+            return response($response,200);
+
+        }
+
+        else {
+            return response([
+                'message'=> 'Set picture to update your profil picture'
+            ],401);
+        }
+    }
+
+    public function update_profil(Request $request) {
+        $id = Auth::user()->id;
+        $user = User::find($id);
+        fields = $request->validate([
+            "identifiant" => 'required|string|unique:users,identifiant|min:5',
+            "email" => 'required|string|unique:users,email',
+            "sexe" => "required|string",
+            "picture" => 'required|file',
+            "birthday" => 'required|date'
+    }
+
 }
