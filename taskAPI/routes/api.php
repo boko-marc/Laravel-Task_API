@@ -20,6 +20,8 @@ Route::group(['middleware' => 'auth:sanctum'], function() {
     Route::get('/getUser',[AuthController::class,'show']);
     Route::get('/deleteUser',[AuthController::class,'destroy']);
     Route::put('/updatePicture',[AuthController::class,'update_picture']);
+    Route::put('/updateProfil',[AuthController::class,'update_profil']);
+    Route::put('/resetPassword',[AuthController::class,'reset_password']);
 });
 
 // public routes
@@ -29,5 +31,5 @@ Route::get('/', function() {
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/login',[AuthController::class,'login']);
 Route::get('/allUsers',[AuthController::class,'index']);
-
-
+Route::put('/activation/{id}',[AuthController::class,'activation_compte']);
+Route::post('receiveMailForgotPassword',[AuthController::class,'receive_email_to_forgot_password']);

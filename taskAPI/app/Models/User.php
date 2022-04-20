@@ -23,7 +23,9 @@ class User extends Authenticatable
         'password',
         'sexe',
         'birthday',
-        'picture'
+        'picture',
+        'api_key',
+
     ];
 
     /**
@@ -43,6 +45,9 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+    ];
+    protected $attributes = [
+        'isValidate' => false
     ];
 
     public function tasks()

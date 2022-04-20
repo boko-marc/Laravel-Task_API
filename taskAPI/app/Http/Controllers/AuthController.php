@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AfterRegister;
+use App\Mail\forgotPassword;
 
 class AuthController extends Controller
 {
@@ -23,27 +26,28 @@ class AuthController extends Controller
         if($request->hasFile('picture'))
         {   $filename = $request->email.'.'.$fields['picture']->getClientOriginalExtension();
             $fields['picture']->move(public_path('/uploads/images',$filename));
+            $token_user = rand();
             $user = User::create([
                 "identifiant" => $fields['identifiant'],
                 "email" => $fields['email'],
                 "password" => bcrypt($fields['password']),
                 "sexe" => $fields["sexe"],
                 "birthday" => $fields['birthday'],
-                "picture" => $filename
+                "picture" => $filename,
+                "api_key" => $token_user
             ]);
-            $token = $user->createToken('user_token')->plainTextToken;
+
             $response = [
-                'message' => 'User create succefuly',
+                'message' => 'Register succefuly, please check your email to validate your compte for create task',
                 'user' => $user,
-                'token' => $token,
                 'succes' => true
             ];
-
+            Mail::to($request->email)->send(new AfterRegister($user));
             return response($response,201);
         }
         else {
 
-            return response(['message'=> 'Set picture'],401);
+            return response(['message'=> 'Set picture to create your profil'],401);
         }
 
     }
@@ -63,7 +67,14 @@ class AuthController extends Controller
             "email" => 'string',
             "password" => 'required|string'
         ]);
-
+        // check if compte is validate
+            $check = User::where('email',$fields['email'])->first();
+            if($check->isValidate == false)
+            {
+                return response([
+                    'message'=> 'Validate your compte after to login'
+                ],401);
+            }
         if(isset($fields['email']))
         {
             $user = User::where('email',$fields['email'])->first();
@@ -170,12 +181,63 @@ class AuthController extends Controller
     public function update_profil(Request $request) {
         $id = Auth::user()->id;
         $user = User::find($id);
-        fields = $request->validate([
-            "identifiant" => 'required|string|unique:users,identifiant|min:5',
-            "email" => 'required|string|unique:users,email',
-            "sexe" => "required|string",
-            "picture" => 'required|file',
-            "birthday" => 'required|date'
+        $fields = $request->validate([
+            "identifiant" => 'string|unique:users,identifiant|min:5',
+            "email" => 'string|unique:users,email',
+            "sexe" => "string",
+            "birthday" => 'date']);
+        $user->update($request->all());
+        $response = ['user' => $user, 'message'=> 'Profil update succefully'];
+            return response($response,200);
+    }
+
+    public function reset_password(Request $request) {
+        $fields = $request->validate([
+            "old_password" => "required|string",
+            "new_password" => "required|string|min:5|confirmed"
+        ]);
+        $id = Auth::user()->id;
+        $user = User::find($id);
+        if(!Hash::check($fields['old_password'], $user->password)){
+            return response(['message'=> 'Bad old password, try again'],401);
+        }
+        $user->password = $request->new_password;
+        $user->save();
+        return response(['message'=> 'Password update succefuly'],200);
+    }
+
+    public function activation_compte($id) {
+        $find = User::where('api_key',$id)->first();
+        if($find)
+        {
+            $find->isValidate = true;
+            $find->save();
+            $token = $find->createToken('user_token')->plainTextToken;
+            return response([
+                'message'=> 'Compte validate succefuly!Thanks',
+                'token' => $token
+            ],200);
+        }
+        else
+        {
+            return response([
+                'message'=> 'Unauthorized'
+            ],401);
+        }
+    }
+
+    public function receive_email_to_forgot_password(Request $request) {
+        $email = $request->email;
+        $user = User::where('email',$email)->first();
+        if($user)
+        {   Mail::to($request->email)->send(new forgotPassword($user->identifiant,$user->api_key));
+            return response([
+                'message'=> 'Check your mail, to reset your password'
+            ],200);
+        }
+        return response([
+            'message'=> 'Bad email!'
+        ],401);
     }
 
 }
