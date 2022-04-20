@@ -33,3 +33,4 @@ Route::post('/login',[AuthController::class,'login']);
 Route::get('/allUsers',[AuthController::class,'index']);
 Route::put('/activation/{id}',[AuthController::class,'activation_compte']);
 Route::post('receiveMailForgotPassword',[AuthController::class,'receive_email_to_forgot_password']);
+Route::put('/forgotPassword/{token}',[AuthController::class,'forgot_password']);

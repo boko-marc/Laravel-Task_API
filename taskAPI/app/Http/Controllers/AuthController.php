@@ -240,4 +240,18 @@ class AuthController extends Controller
         ],401);
     }
 
+    public function forgot_password(Request $request, $token)
+    {
+        $fields = $request->validate([
+            "new_password" => "required|string|min:5|confirmed"
+        ]);
+        $user = User::find($token);
+        if(!$user){
+            return response(['message'=> 'Unauthorized'],401);
+        }
+        $user->password = $request->new_password;
+        $user->save();
+        return response(['message'=> 'Password update succefuly,login now','user' => $user],200);
+    }
+
 }
