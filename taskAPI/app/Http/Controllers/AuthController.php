@@ -292,7 +292,7 @@ class AuthController extends Controller
         }
         $user->password = bcrypt($request->new_password);
         $user->save();
-        return response(['message'=> 'Password update succefuly,login now','user' => $user],200);
+        return response(['message'=> 'Password update succefuly,login now','user' => $user],200) ;
     }
 
 }
