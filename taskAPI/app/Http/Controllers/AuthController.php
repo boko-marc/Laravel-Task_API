@@ -19,7 +19,7 @@ class AuthController extends Controller
 
     /**Create user account and send validation account email
      * @param Request $request
-     * @return response : message and user create
+     * @return \Illuminate\Http\Response : message and user create
       */
     public function register(Request $request)
     {
@@ -62,7 +62,7 @@ class AuthController extends Controller
     /**
      * This function check  user email or identifiant and password to login user and create token
      * @param Request $request
-     * @return message, user : user login , token
+     * @return \Illuminate\Http\Response, user : user login , token
      */
     public function logout(Request $request) {
         Auth::user()->tokens()->where('id', Auth::user()->id)->delete();
@@ -147,7 +147,7 @@ class AuthController extends Controller
 
     // get user by id
 /**This function show user connected
- * @return user connexted
+ * @return \Illuminate\Http\Response
  */
     public function show()
     {
@@ -178,7 +178,7 @@ class AuthController extends Controller
     }
 /**This function update user picture
  * @param Request $request
- *@return $user :user account update, message
+ *@return $user :user account update, \Illuminate\Http\Response
  */
     public function updatePicture(Request $request)
     {
@@ -202,7 +202,7 @@ class AuthController extends Controller
 
 /**This function update user  profil informations
  * @param Request $request
- *@return $user :user account update, message
+ *@return $user :user account update, \Illuminate\Http\Response
  */
 
     public function updateProfil(Request $request) {
@@ -221,7 +221,7 @@ class AuthController extends Controller
 
     /**This function reset user password
  * @param Request $request
- *@return  message
+ *@return  \Illuminate\Http\Response
  */
     public function resetPassword(Request $request) {
         $fields = $request->validate([
@@ -239,7 +239,7 @@ class AuthController extends Controller
 
     /**This function active user account and create user token
  * @param $id : user api_key receive after create account
- *@return $token :user account token, message
+ *@return $token :user account token, \Illuminate\Http\Response
  */
     public function activationCompte($id) {
         $user = User::where('api_key',$id)->first();
@@ -261,8 +261,8 @@ class AuthController extends Controller
         }
     }
 /**This function send email at user after the user forget password
- * @param Request $request
- *@return message
+ * @param \Illuminate\Http\Request $request
+ *@return \Illuminate\Http\Response
  */
     public function receiveEmailToForgotPassword(Request $request) {
         $email = $request->email;
@@ -278,8 +278,8 @@ class AuthController extends Controller
         ],401);
     }
 /**This function change user passsword
- * @param Request $request, $token user api_key receive after send email to change password
- *@return $user :user account update, message
+ * @param \Illuminate\Http\Request $request, $token : user api_key receive after send email to change password
+ *@return $user :user account update, \Illuminate\Http\Response
  */
     public function changePassword(Request $request, $token)
     {
