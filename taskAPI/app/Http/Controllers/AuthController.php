@@ -1,5 +1,8 @@
 <?php
-
+/**
+ *This controller contain all users functions
+ *
+ */
 namespace App\Http\Controllers;
 
 // import  User model,response and hash facades
@@ -13,18 +16,23 @@ use App\Mail\forgotPassword;
 
 class AuthController extends Controller
 {
+
+    /**Create user account and send validation account email
+     * @param Request $request
+     * @return response : message and user create
+      */
     public function register(Request $request)
     {
         $fields = $request->validate([
             "identifiant" => 'required|string|unique:users,identifiant|min:5',
             "email" => 'required|string|unique:users,email',
-            "password" => 'required|string|confirmed|min:5',
+            "password" => 'required|string|confirmed|min:8',
             "sexe" => "required|string",
             "picture" => 'required|file',
             "birthday" => 'required|date'
         ]);
         if($request->hasFile('picture'))
-        {   $filename = $request->email.'.'.$fields['picture']->getClientOriginalExtension();
+        {   $filename = rand().'.'.$fields['picture']->getClientOriginalExtension();
             $fields['picture']->move(public_path('/uploads/images',$filename));
             $token_user = rand();
             $user = User::create([
@@ -39,8 +47,7 @@ class AuthController extends Controller
 
             $response = [
                 'message' => 'Register succefuly, please check your email to validate your compte for create task',
-                'user' => $user,
-                'succes' => true
+                'user' => $user
             ];
             Mail::to($request->email)->send(new AfterRegister($user));
             return response($response,201);
@@ -51,6 +58,12 @@ class AuthController extends Controller
         }
 
     }
+
+    /**
+     * This function check  user email or identifiant and password to login user and create token
+     * @param Request $request
+     * @return message, user : user login , token
+     */
     public function logout(Request $request) {
         Auth::user()->tokens()->where('id', Auth::user()->id)->delete();
 
@@ -122,6 +135,10 @@ class AuthController extends Controller
             ],401);
         }
     }
+
+    /**This function return all users create
+     * @return all users
+     */
 // get  all users
     public function index()
     {
@@ -129,10 +146,12 @@ class AuthController extends Controller
     }
 
     // get user by id
-
+/**This function show user connected
+ * @return user connexted
+ */
     public function show()
-    {   $id = Auth::user()->id;
-        $user = User::find($id);
+    {
+        $user = Auth::user();
         if(!$user)
         {
             return response([
@@ -143,7 +162,7 @@ class AuthController extends Controller
     }
 
     // delete user by id
-
+/**This function delete user connected account */
     public function destroy()
     {   $id = Auth::user()->id;
         $user = User::destroy($id);
@@ -157,16 +176,19 @@ class AuthController extends Controller
             'message'=> 'User delete succefuly'
         ],200);
     }
-
-    public function update_picture(Request $request)
-    {   $id = Auth::user()->id;
-        $picture = User::find($id);
+/**This function update user picture
+ * @param Request $request
+ *@return $user :user account update, message
+ */
+    public function updatePicture(Request $request)
+    {
         $image = $request->file('picture');
         if($request->hasFile('picture'))
-        {   $filename = $picture->email.'.'.$image->getClientOriginalExtension();
+        {   $filename = rand().'.'.$image->getClientOriginalExtension();
             $image->move(public_path('/uploads/images',$filename));
-            $picture->update($request->all());
-            $response = ['user' => $picture, 'message'=> 'Picture update succefully'];
+            Auth::user()->picture = $filename;
+            Auth::user()->save();
+            $response = ['user' => $Auth::user(), 'message'=> 'Picture update succefully'];
             return response($response,200);
 
         }
@@ -178,41 +200,54 @@ class AuthController extends Controller
         }
     }
 
-    public function update_profil(Request $request) {
-        $id = Auth::user()->id;
-        $user = User::find($id);
+/**This function update user  profil informations
+ * @param Request $request
+ *@return $user :user account update, message
+ */
+
+    public function updateProfil(Request $request) {
         $fields = $request->validate([
             "identifiant" => 'string|unique:users,identifiant|min:5',
             "email" => 'string|unique:users,email',
             "sexe" => "string",
             "birthday" => 'date']);
-        $user->update($request->all());
-        $response = ['user' => $user, 'message'=> 'Profil update succefully'];
+
+            $user = Auth::user();
+            $user->update($request->all());
+            $response = ['user' => $user, 'message'=> 'Profil update succefully'];
             return response($response,200);
     }
 
-    public function reset_password(Request $request) {
+
+    /**This function reset user password
+ * @param Request $request
+ *@return  message
+ */
+    public function resetPassword(Request $request) {
         $fields = $request->validate([
             "old_password" => "required|string",
-            "new_password" => "required|string|min:5|confirmed"
+            "new_password" => "required|string|min:8|confirmed"
         ]);
-        $id = Auth::user()->id;
-        $user = User::find($id);
+        $user = Auth::user();
         if(!Hash::check($fields['old_password'], $user->password)){
             return response(['message'=> 'Bad old password, try again'],401);
         }
-        $user->password = $request->new_password;
+        $user->password = bcrypt($request->new_password);
         $user->save();
         return response(['message'=> 'Password update succefuly'],200);
     }
 
-    public function activation_compte($id) {
-        $find = User::where('api_key',$id)->first();
-        if($find)
+    /**This function active user account and create user token
+ * @param $id : user api_key receive after create account
+ *@return $token :user account token, message
+ */
+    public function activationCompte($id) {
+        $user = User::where('api_key',$id)->first();
+        if($user)
         {
-            $find->isValidate = true;
-            $find->save();
-            $token = $find->createToken('user_token')->plainTextToken;
+            $user->isValidate = true;
+            $user->save();
+            $token = $user->createToken('user_token')->plainTextToken;
             return response([
                 'message'=> 'Compte validate succefuly!Thanks',
                 'token' => $token
@@ -225,8 +260,11 @@ class AuthController extends Controller
             ],401);
         }
     }
-
-    public function receive_email_to_forgot_password(Request $request) {
+/**This function send email at user after the user forget password
+ * @param Request $request
+ *@return message
+ */
+    public function receiveEmailToForgotPassword(Request $request) {
         $email = $request->email;
         $user = User::where('email',$email)->first();
         if($user)
@@ -239,11 +277,14 @@ class AuthController extends Controller
             'message'=> 'Bad email!'
         ],401);
     }
-
-    public function change_password(Request $request, $token)
+/**This function change user passsword
+ * @param Request $request, $token user api_key receive after send email to change password
+ *@return $user :user account update, message
+ */
+    public function changePassword(Request $request, $token)
     {
         $fields = $request->validate([
-            "new_password" => "required|string|min:5|confirmed"
+            "new_password" => "required|string|min:8|confirmed"
         ]);
         $user = User::find($token);
         if(!$user){

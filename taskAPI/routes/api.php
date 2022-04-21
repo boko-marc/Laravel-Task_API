@@ -16,21 +16,21 @@ use App\Http\Controllers\AuthController;
 
 // protected  routes
 Route::group(['middleware' => 'auth:sanctum'], function() {
-    Route::post('/logout',[AuthController::class,'logout']);
-    Route::get('/getUser',[AuthController::class,'show']);
-    Route::get('/deleteUser',[AuthController::class,'destroy']);
-    Route::put('/updatePicture',[AuthController::class,'update_picture']);
-    Route::put('/updateProfil',[AuthController::class,'update_profil']);
-    Route::put('/resetPassword',[AuthController::class,'reset_password']);
+    Route::post('/user/logout',[AuthController::class,'logout']);
+    Route::get('/user/get/user',[AuthController::class,'show']);
+    Route::get('/user/delete/user',[AuthController::class,'destroy']);
+    Route::put('/user/update/picture',[AuthController::class,'updatePicture']);
+    Route::put('/user/update/profil',[AuthController::class,'updateProfil']);
+    Route::put('/user/reset/password',[AuthController::class,'resetPassword']);
 });
 
 // public routes
 Route::get('/', function() {
     return "Welcome in my fist API with Laravel but i love Node js";
 });
-Route::post('/register',[AuthController::class,'register']);
-Route::post('/login',[AuthController::class,'login']);
-Route::get('/allUsers',[AuthController::class,'index']);
-Route::put('/activation/{id}',[AuthController::class,'activation_compte']);
-Route::post('receiveMailForgotPassword',[AuthController::class,'receive_email_to_forgot_password']);
-Route::put('/forgotPassword/{token}',[AuthController::class,'change_password']);
+Route::post('/auth/register',[AuthController::class,'register']);
+Route::post('/auth/login',[AuthController::class,'login']);
+Route::get('/user/all/users',[AuthController::class,'index']);
+Route::put('/auth/activation/compte/{id}',[AuthController::class,'activationCompte']);
+Route::post('/user/receive/mail/forgot/password',[AuthController::class,'receiveEmailToForgotPassword']);
+Route::put('/user/change/password/{token}',[AuthController::class,'changePassword']);

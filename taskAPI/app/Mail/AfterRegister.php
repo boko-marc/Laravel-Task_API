@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use App\Models\User;
 use Illuminate\Queue\SerializesModels;
 
-class AfterRegister extends Mailable
+class AfterRegister extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
