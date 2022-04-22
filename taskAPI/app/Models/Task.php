@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 class Task extends Model
 {
-    
+
 
     protected $fillable = [
         'title',
         'description',
         'status',
         'date_of_end',
+        'start_date'
     ];
 
     protected $attributes = [
