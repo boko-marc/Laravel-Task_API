@@ -33,8 +33,11 @@ class SendEmail implements ShouldQueue
      */
     public function handle()
     {
-
+        if($this->task->status ==2)
+        {
             Mail::to($task->user()->email)->send(new SendEmailBeforeTaskEnd($task))->afterResponse();
+
+        }
 
     }
 }
